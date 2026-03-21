@@ -11,6 +11,13 @@ logger = logging.getLogger(__name__)
 _processing = False
 
 
+def get_pipeline_mode(db: Session) -> str:
+    """Returns 'auto' or 'review'. Defaults to 'auto'."""
+    from app.models.setting import Setting
+    setting = db.query(Setting).filter(Setting.key == "pipeline_mode").first()
+    return setting.value if setting else "auto"
+
+
 async def process_queue(db: Session):
     """
     Pick up all pending images and dispatch video generation for each.
@@ -30,42 +37,44 @@ async def process_queue(db: Session):
             .all()
         )
         logger.info(f"Processing {len(pending)} pending images.")
+        mode = get_pipeline_mode(db)
 
         for image in pending:
-            await _process_image(image, db)
+            await _process_image(image, db, mode)
     finally:
         _processing = False
 
 
-async def _process_image(image: Image, db: Session):
-    from app.models.template import PromptTemplate
-    from app.models.theme import Theme
+async def _process_image(image: Image, db: Session, mode: str):
     from app.services.video_service import generate_video
 
+    video = None
     image.status = ImageStatus.processing
     db.commit()
 
     try:
-        # Build prompt from template + theme
         prompt = _build_prompt(image, db)
 
-        # Create a video record
         video = Video(image_id=image.id, prompt_used=prompt, status=VideoStatus.pending)
         db.add(video)
         db.commit()
         db.refresh(video)
 
-        # Attempt video generation (will raise NotImplementedError until Grok key is set)
         video.status = VideoStatus.generating
         db.commit()
 
         video_path = await generate_video(prompt=prompt, image_path=image.original_path)
         video.video_path = video_path
-        video.status = VideoStatus.ready
         image.status = ImageStatus.done
 
+        if mode == "review":
+            # Park in review queue — human must approve before scheduling
+            video.status = VideoStatus.pending_review
+        else:
+            # Auto mode — mark ready so scheduler picks it up immediately
+            video.status = VideoStatus.ready
+
     except NotImplementedError:
-        # Grok API not configured yet — mark as pending to retry later
         image.status = ImageStatus.pending
         if video:
             video.status = VideoStatus.failed

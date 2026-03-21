@@ -8,3 +8,5 @@ anthropic
 httpx
 python-dotenv
 alembic
+python-jose[cryptography]
+passlib[bcrypt]
