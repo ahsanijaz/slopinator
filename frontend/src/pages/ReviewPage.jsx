@@ -104,7 +104,11 @@ function VideoCard({ video, token, onAction, msg, setMsg, isRejected }) {
   }
 
   const videoUrl = video.video_path
-    ? `http://localhost:8000/videos/${video.video_path.split('/').pop()}`
+    ? `http://localhost:8000/api/admin/media/video/${video.video_path.split('/').pop()}?token=${token}`
+    : null
+
+  const imageUrl = video.image_path
+    ? `http://localhost:8000/api/admin/media/upload/${video.image_path.split('/').pop()}?token=${token}`
     : null
 
   return (
@@ -114,9 +118,9 @@ function VideoCard({ video, token, onAction, msg, setMsg, isRejected }) {
         {/* Source image */}
         <div style={{ flex: '0 0 180px' }}>
           <p style={metaLabelStyle}>Source Image</p>
-          {video.image_path ? (
+          {imageUrl ? (
             <img
-              src={`http://localhost:8000/uploads/${video.image_path.split('/').pop()}`}
+              src={imageUrl}
               alt={video.image_filename}
               style={{ width: 180, height: 180, objectFit: 'cover', borderRadius: 8, background: '#111' }}
               onError={e => { e.target.style.display = 'none' }}
