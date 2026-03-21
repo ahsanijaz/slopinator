@@ -5,6 +5,9 @@ const STATUS_COLORS = {
   pending: '#f59e0b',
   generating: '#6c63ff',
   ready: '#22c55e',
+  pending_review: '#fb923c',
+  approved: '#34d399',
+  rejected: '#f87171',
   failed: '#ef4444',
 }
 

@@ -104,11 +104,11 @@ function VideoCard({ video, token, onAction, msg, setMsg, isRejected }) {
   }
 
   const videoUrl = video.video_path
-    ? `http://localhost:8000/api/admin/media/video/${video.video_path.split('/').pop()}?token=${token}`
+    ? `${import.meta.env.VITE_API_URL || ''}/api/admin/media/video/${video.video_path.split('/').pop()}?token=${token}`
     : null
 
   const imageUrl = video.image_path
-    ? `http://localhost:8000/api/admin/media/upload/${video.image_path.split('/').pop()}?token=${token}`
+    ? `${import.meta.env.VITE_API_URL || ''}/api/admin/media/upload/${video.image_path.split('/').pop()}?token=${token}`
     : null
 
   return (
