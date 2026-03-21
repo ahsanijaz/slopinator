@@ -3,10 +3,12 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, SessionLocal, engine
 from app.routers import images, queue, templates, themes, videos
 from app.routers import tiktok
+from app.routers import admin
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,14 @@ app.include_router(themes.router, prefix="/api")
 app.include_router(queue.router, prefix="/api")
 app.include_router(videos.router, prefix="/api")
 app.include_router(tiktok.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+
+
+import os
+os.makedirs("generated_videos", exist_ok=True)
+os.makedirs("uploads", exist_ok=True)
+app.mount("/videos", StaticFiles(directory="generated_videos"), name="videos")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.on_event("startup")

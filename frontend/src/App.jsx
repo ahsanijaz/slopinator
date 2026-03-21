@@ -5,6 +5,7 @@ import QueuePage from './pages/QueuePage'
 import TemplatesPage from './pages/TemplatesPage'
 import ThemesPage from './pages/ThemesPage'
 import HistoryPage from './pages/HistoryPage'
+import ReviewPage from './pages/ReviewPage'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/templates" element={<TemplatesPage />} />
         <Route path="/themes" element={<ThemesPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/review" element={<ReviewPage />} />
       </Routes>
     </Layout>
   )
