@@ -3,7 +3,6 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, SessionLocal, engine
 from app.routers import images, queue, templates, themes, videos
@@ -34,8 +33,6 @@ app.include_router(admin.router, prefix="/api")
 import os
 os.makedirs("generated_videos", exist_ok=True)
 os.makedirs("uploads", exist_ok=True)
-app.mount("/videos", StaticFiles(directory="generated_videos"), name="videos")
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.on_event("startup")

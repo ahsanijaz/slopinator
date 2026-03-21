@@ -1,8 +1,10 @@
+import mimetypes
 import os
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -144,6 +146,33 @@ def delete_video(video_id: int, db: Session = Depends(get_db), _=Depends(_verify
     db.delete(video)
     db.commit()
     return {"status": "deleted", "id": video_id}
+
+
+# ── Protected media streaming ─────────────────────────────────────────────────
+
+def _verify_token_query(token: str = Query(...)):
+    """Token via query param — for use in <img src> and <video src> tags."""
+    try:
+        jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token.")
+
+
+@router.get("/media/video/{filename}")
+def stream_video(filename: str, _=Depends(_verify_token_query)):
+    path = os.path.join("generated_videos", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="File not found.")
+    return FileResponse(path, media_type="video/mp4")
+
+
+@router.get("/media/upload/{filename}")
+def stream_upload(filename: str, _=Depends(_verify_token_query)):
+    path = os.path.join("uploads", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="File not found.")
+    mime, _ = mimetypes.guess_type(path)
+    return FileResponse(path, media_type=mime or "application/octet-stream")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
