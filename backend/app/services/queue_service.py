@@ -75,9 +75,11 @@ async def _process_image(image: Image, db: Session, mode: str):
             video.status = VideoStatus.ready
 
     except NotImplementedError:
-        image.status = ImageStatus.pending
+        # Grok API key not set — mark image done, video pending (waiting for API key).
+        # Image won't re-queue; user can manually re-trigger once key is configured.
+        image.status = ImageStatus.done
         if video:
-            video.status = VideoStatus.failed
+            video.status = VideoStatus.pending
     except Exception as e:
         logger.error(f"Failed to process image {image.id}: {e}")
         image.status = ImageStatus.failed

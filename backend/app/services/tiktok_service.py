@@ -20,7 +20,7 @@ async def get_auth_url() -> str:
         "client_key": settings.TIKTOK_CLIENT_KEY,
         "response_type": "code",
         "scope": "user.info.basic,video.publish,video.upload",
-        "redirect_uri": "https://localhost/api/tiktok/callback",
+        "redirect_uri": settings.TIKTOK_REDIRECT_URI,
         "state": "slopinator_oauth",
     }
     return f"{TIKTOK_AUTH_BASE}?{urllib.parse.urlencode(params)}"
@@ -37,7 +37,7 @@ async def exchange_code(code: str) -> dict:
         "client_secret": settings.TIKTOK_CLIENT_SECRET,
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": "https://localhost/api/tiktok/callback",
+        "redirect_uri": settings.TIKTOK_REDIRECT_URI,
     }
     async with httpx.AsyncClient() as client:
         resp = await client.post(

@@ -32,7 +32,7 @@ def schedule_ready_videos(db: Session, posts_per_day: int = 2) -> list[Post]:
     unscheduled_videos = (
         db.query(Video)
         .filter(
-            Video.status == VideoStatus.ready,
+            Video.status.in_([VideoStatus.ready, VideoStatus.approved]),
             ~Video.id.in_(scheduled_video_ids),
         )
         .order_by(Video.created_at.asc())
